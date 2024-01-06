@@ -202,6 +202,12 @@ class Allergen {
       this.longitude = newLongitude;
     }
   }
+
+  
+ // Objeto RestaurantsManager
+ class RestaurantsManager {
+ 
+}
   
   const dish1 = new Dish('Pasta Carbonara', 'Plato italiano', ['pasta', 'bacon', 'salsa'], '/images/pasta.jpg');
   const category1 = new Category('Italiano', 'Cocina Italiana');
