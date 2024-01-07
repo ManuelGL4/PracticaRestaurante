@@ -257,6 +257,7 @@ class Allergen {
   const restaurantsManager = new RestaurantsManager('Sistema del restaurante');
   restaurantsManager.addCategory(category1);
   restaurantsManager.addCategory(new Category('Mexicano', 'Cocina Mexicana'))
+//  restaurantsManager.addCategory(new Category('Mexicano', 'Cocina Mexicana'))
 
   const categoriesIterator = restaurantsManager.getCategories();
   for (const category of categoriesIterator) {
