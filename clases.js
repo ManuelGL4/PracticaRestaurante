@@ -218,72 +218,10 @@ class Allergen {
     }
   }
 
-  
- // Objeto RestaurantsManager
- class RestaurantsManager {
-  constructor(systemName) {
-    if (RestaurantsManager.instance) {
-      return RestaurantsManager.instance;
-    }
+  export {
+    Dish, Coordinate, Allergen, Restaurant, Menu, Category,
+  };
 
-    this.systemName = systemName;
-    this.categoriesMap = new Map(); // coleccion para almacenar categorias
-    this.menusMap = new Map(); // coleccion para almacenar menús 
-    this.allergensMap = new Map(); // coleccion para almacenar alérgenos
-    this.dishesMap = new Map(); //coleccion  para almacenar platos
-    this.restaurantsMap = new Map(); // coleccion para almacenar restaurantes 
-    RestaurantsManager.instance = this;
-  }//Fin constructor
-
-  //Getter de categories
-  getCategories() {
-    //El .values del mapa devuelve un iterable con los valores del mapa
-    return this.categoriesMap.values();
-  }
-  //Getter de menus
-  getMenus(){
-    return this.menusMap.values();
-  }
-// Método addCategory
-addCategory(...categories) {
-  for (const newCategory of categories) {
-    if (!newCategory || !(newCategory instanceof Category)) {
-      throw new Error('Las categorías deben ser objetos Category');
-    }
-
-    const categoryName = newCategory.getName();
-
-    if (this.categoriesMap.has(categoryName)) {
-      throw new Error('La categoría ya existe en la colección');
-    }
-
-    this.categoriesMap.set(categoryName, newCategory);
-  }
-
-  return this; // Para poder encadenar
-}
-
-// Método addMenu
-addMenu(...menus) {
-  for (const newMenu of menus) {
-    if (!newMenu || !(newMenu instanceof Menu)) {
-      throw new Error('Los menús deben ser objetos Menu');
-    }
-
-    const menuName = newMenu.getName();
-
-    if (this.menusMap.has(menuName)) {
-      throw new Error('El menú ya existe en la colección');
-    }
-
-    this.menusMap.set(menuName, newMenu);
-  }
-
-  return this; // Para poder encadenar
-}
-  
-}//Fin clase RestaurantsManager
-  
   const dish1 = new Dish('Pasta Carbonara', 'Plato italiano', ['pasta', 'bacon', 'salsa'], '/images/pasta.jpg');
   const category1 = new Category('Italiano', 'Cocina Italiana');
 
@@ -293,28 +231,8 @@ addMenu(...menus) {
   const coordinate1 = new Coordinate(40.7128, -74.0060);
   const restaurant1 = new Restaurant('Restaurante 1', 'El mejor restaurante', coordinate1);
 
-  const restaurantsManager = new RestaurantsManager('Sistema del restaurante');
-  restaurantsManager.addCategory(category1, new Category('Mexicano', 'Cocina Mexicana'));  
-//  restaurantsManager.addCategory(new Category('Mexicano', 'Cocina Mexicana'))
-
-  const categoriesIterator = restaurantsManager.getCategories();
-  for (const category of categoriesIterator) {
-  console.log(category.toString());
-  }
-
-// Añadir menús
-restaurantsManager.addMenu(menu1, new Menu('Menu 2', 'Descripción del Menú 2'));
-
-// Obtener el iterador de menús y mostrar la información correctamente
-const menusIterator = restaurantsManager.getMenus();
-for (const menu of menusIterator) {
-  console.log(menu.toString());
-}
-
-/*
   console.log(allergen1);
   console.log(dish1.toString());
   console.log(category1.toString());
   console.log(menu1);
   console.log(restaurant1);
-  */
