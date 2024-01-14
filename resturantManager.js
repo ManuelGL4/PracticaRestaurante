@@ -405,6 +405,66 @@ const RestaurantsManager = (function () {
     
       return this;
     }
+    //NO VA
+    getDishesInCategory(category) {
+      if (!category || !(category instanceof Category)) {
+        throw new Error('La categoría debe ser un objeto Category y no puede ser nula.');
+      }
+    
+      const categoryDishes = category.getDishes();
+    
+      return {
+        [Symbol.iterator]: function* () {
+          for (const dish of categoryDishes) {
+            yield dish;
+          }
+        }
+      };
+    }
+
+    //NO VA
+    getDishesWithAllergen(allergen) {
+      if (!allergen || !(allergen instanceof Allergen)) {
+        throw new Error('El alérgeno debe ser un objeto Allergen y no puede ser nulo.');
+      }
+    
+      const allergenDishes = allergen.getDishes();
+    
+      return {
+        [Symbol.iterator]: function* () {
+          for (const dish of allergenDishes) {
+            yield dish;
+          }
+        }
+      };
+    }
+    
+    findDishes(callback, sortFunction) {
+      if (typeof callback !== 'function' || typeof sortFunction !== 'function') {
+        throw new Error('Las funciones de callback y ordenación deben ser proporcionadas.');
+      }
+    
+      // Filtrar los platos basados en la función de callback
+      const filteredDishes = this.#dishes.filter(callback);
+    
+      // Ordenar los platos si se proporciona una función de ordenación
+      if (sortFunction) {
+        filteredDishes.sort(sortFunction);
+      }
+    
+      return {
+        [Symbol.iterator]: function* () {
+          for (const dish of filteredDishes) {
+            yield dish;
+          }
+        }
+      };
+    }
+    
+    
+    
+    
+    
     
   
     
@@ -515,6 +575,16 @@ try {
   //manager.changeDishesPositionsInMenu(menu1,dish2,dish1);
 
 
+// Obtener los platos con un alérgeno específico y ordenarlos por nombre
+const sortedDishesWithAllergen = manager.getDishesWithAllergen(allergen1);
+
+// Recorrer e imprimir los platos con el alérgeno específico
+console.log('Dishes with Allergen');
+for (const dish of sortedDishesWithAllergen) {
+  console.log(dish.getName());
+}
+
+
   //manager.deassignCategoryToDish(category1,dish1);
   // Obtener y mostrar las categorías
   console.log('Categories:');
@@ -544,6 +614,8 @@ try {
   for (const dish of manager.getDishes()) {
     console.log(dish);
   }
+
+  
 
 } catch (error) {
   console.error('Error:', error.message);

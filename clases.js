@@ -103,7 +103,7 @@ class Allergen {
   }
 
   getDishes() {
-    return this.dishes;
+    return Array.from(this.dishes);
   }
 
   setDishes(newDishes) {
