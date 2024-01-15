@@ -85,23 +85,33 @@ const RestaurantsManager = (function () {
       return this;
     }
     removeMenu(menu) {
-      if (!menu || !(menu instanceof Menu) || !this.#menus.includes(menu)) {
+      // Verificar si menu es nulo o no es una instancia de Menu
+      if (!menu || !(menu instanceof Menu)) {
+        throw new Error('El menú debe ser un objeto Menu y no puede ser nulo.');
+      }
+    
+      // Verificar si el menú está registrado
+      if (!this.#menus.includes(menu)) {
         throw new Error('El menú no está registrado.');
       }
-
-      // Desasignar platos del menú
-      this.#dishes.forEach(function (dish) {
-        dish.setMenus(dish.getMenus().filter(function (m) {
-          return m !== menu;
-        }));
+    
+      // Obtener los platos del menú
+      const menuDishes = menu.getDishes();
+    
+      // Desasignar el menú de los platos
+      menuDishes.forEach((dish) => {
+        menu.setDishes(menu.getDishes().filter((d) => d !== menu));
       });
-
+    
       // Eliminar el menú
       const index = this.#menus.indexOf(menu);
-      this.#menus.splice(index, 1);
-
+      if (index !== -1) {
+        this.#menus.splice(index, 1);
+      }
+    
       return this;
     }
+    
     addAllergen(...newAllergens) {
       newAllergens.forEach(function (newAllergen) {
         if (!newAllergen || !(newAllergen instanceof Allergen)) {
@@ -319,18 +329,17 @@ const RestaurantsManager = (function () {
         throw new Error('El plato no está registrado.');
       }
     
-      // Desasignar el alérgeno del plato
-      dish.setAllergens([]);
-    
       // Desasignar el plato del alérgeno
       const updatedDishes = allergen.getDishes().filter(function (d) {
         return d !== dish;
       });
+    
       allergen.setDishes(updatedDishes);
     
       return this;
     }
-
+    
+    
     assignDishToMenu(menu, dish) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu)) {
@@ -368,7 +377,28 @@ const RestaurantsManager = (function () {
     
       return this;
     }
-    //NO VA
+    deassignDishToMenu(menu, dish) {
+      // Verificar si menu es nulo o no es una instancia de Menu
+      if (!menu || !(menu instanceof Menu) || !this.#menus.includes(menu)) {
+        throw new Error('El menú no está registrado.');
+      }
+    
+      // Verificar si dish es nulo o no está registrado
+      if (!dish || !(dish instanceof Dish) || !this.#dishes.includes(dish)) {
+        throw new Error('El plato no está registrado.');
+      }
+    
+      // Obtener el array de platos del menú
+      const updatedDishes = menu.getDishes().filter(function (d) {
+        return d !== dish;
+      });
+    
+      // Establecer el array de platos actualizado en el menú
+      menu.setDishes(updatedDishes);
+    
+      return this;
+    }
+    
     changeDishesPositionsInMenu(menu, dish1, dish2) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu)) {
@@ -385,10 +415,6 @@ const RestaurantsManager = (function () {
         throw new Error('El segundo plato debe ser un objeto Dish y no puede ser nulo.');
       }
     
-      // Verificar si los platos están registrados en el menú
-      if (!menu.getDishes().includes(dish1) || !menu.getDishes().includes(dish2)) {
-        throw new Error('Uno o ambos platos no están registrados en el menú.');
-      }
     
       // Obtener la posición de los platos en el array
       const index1 = menu.getDishes().indexOf(dish1);
@@ -405,39 +431,57 @@ const RestaurantsManager = (function () {
     
       return this;
     }
-    //NO VA
+
     getDishesInCategory(category) {
-      if (!category || !(category instanceof Category)) {
-        throw new Error('La categoría debe ser un objeto Category y no puede ser nula.');
+      if (!category || !(category instanceof Category) || !this.#categories.includes(category)) {
+        throw new Error('La categoría no está registrada.');
       }
     
-      const categoryDishes = category.getDishes();
+      const categoryDishes = Array.from(category.getDishes(), function (categoryDish) {
+        return categoryDish.dish;
+      });
     
       return {
-        [Symbol.iterator]: function* () {
-          for (const dish of categoryDishes) {
-            yield dish;
-          }
+        [Symbol.iterator]: function () {
+          let index = 0;
+          return {
+            next: function () {
+              if (index < categoryDishes.length) {
+                return { value: categoryDishes[index++], done: false };
+              } else {
+                return { done: true };
+              }
+            }
+          };
         }
       };
     }
 
-    //NO VA
     getDishesWithAllergen(allergen) {
-      if (!allergen || !(allergen instanceof Allergen)) {
-        throw new Error('El alérgeno debe ser un objeto Allergen y no puede ser nulo.');
+      if (!allergen || !(allergen instanceof Allergen) || !this.#allergens.includes(allergen)) {
+        throw new Error('El alérgeno no está registrado.');
       }
     
-      const allergenDishes = allergen.getDishes();
+      const allergenDishes = this.#dishes.filter(function (dish) {
+        return dish.getAllergens().includes(allergen);
+      });
     
       return {
-        [Symbol.iterator]: function* () {
-          for (const dish of allergenDishes) {
-            yield dish;
-          }
+        [Symbol.iterator]: function () {
+          let index = 0;
+          return {
+            next: function () {
+              if (index < allergenDishes.length) {
+                return { value: allergenDishes[index++], done: false };
+              } else {
+                return { done: true };
+              }
+            }
+          };
         }
       };
     }
+    
     
     findDishes(callback, sortFunction) {
       if (typeof callback !== 'function' || typeof sortFunction !== 'function') {
@@ -502,6 +546,28 @@ const RestaurantsManager = (function () {
         return newAllergen;
       }
     }
+    createCategory(name, description = '') {
+      const existCategory = this.#categories.find((category) => category.getName() === name);
+      if (existCategory) {
+        return existCategory;
+      } else {
+        let newCategory = new Category(name, description);
+        this.#categories.push(newCategory);
+        return newCategory;
+      }
+    }
+  
+    // Método createRestaurant
+    createRestaurant(name, description = '', location = null) {
+      const existRestaurant = this.#restaurants.find((restaurant) => restaurant.getName() === name);
+      if (existRestaurant) {
+        return existRestaurant;
+      } else {
+        let newRestaurant = new Restaurant(name, description, location);
+        this.#restaurants.push(newRestaurant);
+        return newRestaurant;
+      }
+    }
   }
 
 
@@ -521,7 +587,9 @@ const RestaurantsManager = (function () {
 };
 })();
 
-// Crear RestaurantsManager
+
+function test() {
+  // Crear RestaurantsManager
 const manager = RestaurantsManager.getInstance();
 
 const category1 = new Category('CAT1', 'Descripcion cat 1');
@@ -539,84 +607,210 @@ const restaurant1 = new Restaurant('Restaurante1', 'El mejor restaurante', coord
 // Pruebas de las funciones de RestaurantsManager
 try {
   // Añadir categorías
+  console.log("------------------AÑADIR CATEGORIAS------------------");
   manager.addCategory(category1, category2);
-  // Eliminar categorias
-  manager.removeCategory(category1, category2);
-
-  manager.addCategory(category1)
-  // Añadir alérgenos
-  manager.addAllergen(allergen1, allergen2);
-  // Eliminar alergeno
-  manager.removeAllergen(allergen1, allergen2);
-  manager.addAllergen(allergen1);
-  // Añadir platos
-  manager.addDish(dish1, dish2);
-  // Añadir menú
-  manager.addMenu(menu1, menu2);
-  //Eliminar menu
-  //manager.removeMenu(menu1);
-
-  // Añadir restaurante
-  manager.addRestaurant(restaurant1);
-  // Elminiar restaurante
-  //manager.removeRestaurant(restaurant1);
-  //Asignar categorie al plato
-  manager.assignCategoryToDish(category1, dish1);
-  // Eliminar platos
-  //manager.removeDish(dish1, dish2);
-
-  manager.assignAllergenToDish(allergen1,dish1);
-  //Crear objetos
-  let newDish = manager.createDish('Ensalada2', 'Descripcion ensalada2', "Ingredientes de ensalada2", "ensalada2.jpg");
-  console.log(newDish);
-  //manager.deassignAllergenToDish(allergen1,dish1);
-  manager.assignDishToMenu(menu1,dish1);
-  manager.assignDishToMenu(menu1,dish2);
-  //manager.changeDishesPositionsInMenu(menu1,dish2,dish1);
-
-
-// Obtener los platos con un alérgeno específico y ordenarlos por nombre
-const sortedDishesWithAllergen = manager.getDishesWithAllergen(allergen1);
-
-// Recorrer e imprimir los platos con el alérgeno específico
-console.log('Dishes with Allergen');
-for (const dish of sortedDishesWithAllergen) {
-  console.log(dish.getName());
-}
-
-
-  //manager.deassignCategoryToDish(category1,dish1);
   // Obtener y mostrar las categorías
-  console.log('Categories:');
   for (const category of manager.getCategories()) {
     console.log(category);
   }
 
-  // Obtener y mostrar los menús
-  console.log('Menus:');
-  for (const menu of manager.getMenus()) {
-    console.log(menu);
+
+  // Eliminar categorias
+  console.log("------------------ELIMINAR CATEGORIAS------------------");
+  manager.removeCategory(category1, category2);
+  for (const category of manager.getCategories()) {
+    console.log(category);
   }
 
+  console.log("------------------AÑADIR CATEGORIA 1 DE NUEVO------------------");
+  manager.addCategory(category1)
+  for (const category of manager.getCategories()) {
+    console.log(category);
+  }
+
+  // Añadir alérgenos
+  console.log("------------------AÑADIR ALERGENOS------------------");
+  manager.addAllergen(allergen1, allergen2);
   // Obtener y mostrar los alérgenos
-  console.log('Allergens:');
   for (const allergen of manager.getAllergens()) {
     console.log(allergen);
   }
 
-  // Obtener y mostrar los restaurantes
-  console.log('Restaurants:');
-  for (const restaurant of manager.getRestaurants()) {
-    console.log(restaurant);
+  // Eliminar alergeno
+  manager.removeAllergen(allergen1, allergen2);
+  console.log("------------------ELIMINAR ALERGENOS------------------");
+  for (const allergen of manager.getAllergens()) {
+    console.log(allergen);
   }
 
-  console.log('Dishes:');
+  console.log("------------------AÑADIR ALERGENO 1 DE NUEVO------------------");
+  manager.addAllergen(allergen1);
+  for (const allergen of manager.getAllergens()) {
+    console.log(allergen);
+  }
+
+  // Añadir platos
+  console.log("------------------AÑADIR PLATOS------------------");
+  manager.addDish(dish1, dish2);
   for (const dish of manager.getDishes()) {
     console.log(dish);
   }
 
+  // Eliminar platos
+  console.log("------------------ELIMINAR PLATOS------------------");
+  manager.removeDish(dish1, dish2);
+  for (const dish of manager.getDishes()) {
+    console.log(dish);
+  }
+
+  // Añadir platos
+  console.log("------------------AÑADIR PLATOS DE NUEVO------------------");
+  manager.addDish(dish1, dish2);
+  for (const dish of manager.getDishes()) {
+    console.log(dish);
+  }
   
+  // Añadir menú
+  console.log("------------------AÑADIR MENUS------------------");
+  manager.addMenu(menu1, menu2);
+    // Obtener y mostrar los menús
+    for (const menu of manager.getMenus()) {
+      console.log(menu);
+    }
+
+  //Eliminar menu
+  console.log("------------------ELIMINAR MENU 1------------------");
+  manager.removeMenu(menu1);
+  for (const menu of manager.getMenus()) {
+    console.log(menu);
+  }
+
+  console.log("------------------AÑADIR MENU DE NUEVO------------------");
+  manager.addMenu(menu1);
+  for (const menu of manager.getMenus()) {
+    console.log(menu);
+  }
+
+  // Añadir restaurante
+  console.log("------------------AÑADIR RESTAURANTE------------------");
+  manager.addRestaurant(restaurant1);
+  // Obtener y mostrar los restaurantes
+  for (const restaurant of manager.getRestaurants()) {
+    console.log(restaurant);
+  }
+
+  // Elminiar restaurante
+  console.log("------------------ELIMINAR RESTAURANTE------------------");
+  manager.removeRestaurant(restaurant1);
+  for (const restaurant of manager.getRestaurants()) {
+    console.log(restaurant);
+  }
+
+    // Añadir restaurante
+    console.log("------------------AÑADIR RESTAURANTE DE NUEVO------------------");
+    manager.addRestaurant(restaurant1);
+    // Obtener y mostrar los restaurantes
+    for (const restaurant of manager.getRestaurants()) {
+      console.log(restaurant);
+    }
+
+  //Asignar categorie al plato
+  console.log("------------------ASIGNAR CATEGORIA1 AL PLATO1------------------");
+  manager.assignCategoryToDish(category1, dish1);
+  for (const category of manager.getCategories()) {
+    console.log(category);
+  }
+
+  console.log("------------------DESASIGNAR CATEGORIA1 AL PLATO1------------------");
+  manager.deassignCategoryToDish(category1,dish1);
+  for (const category of manager.getCategories()) {
+    console.log(category);
+  }
+
+  console.log("------------------ASIGNAR ALERGENO1 AL PLATO1------------------");
+  manager.assignAllergenToDish(allergen1,dish1);
+  for (const allergen of manager.getAllergens()) {
+    console.log(allergen);
+  }
+
+  console.log("------------------DESASIGNAR ALERGENO1 AL PLATO1------------------");
+  manager.deassignAllergenToDish(allergen1,dish1);
+  for (const allergen of manager.getAllergens()) {
+    console.log(allergen);
+  }
+
+  console.log("------------------ASIGNAR PLATOS AL MENU1------------------");
+  manager.assignDishToMenu(menu1,dish1);
+  manager.assignDishToMenu(menu1,dish2);
+  for (const menu of manager.getMenus()) {
+    console.log(menu);
+  }
+  console.log("------------------DESASIGNAR PLATOS AL MENU1------------------");
+  manager.deassignDishToMenu(menu1,dish1);
+  for (const menu of manager.getMenus()) {
+    console.log(menu);
+  }
+
+  console.log("------------------CAMBIAR POSICION PLATOS EN MENU------------------");
+  manager.changeDishesPositionsInMenu(menu1,dish1,dish2);
+  for (const menu of manager.getMenus()) {
+    console.log(menu);
+  }
+  
+  const dishesIterator = manager.getDishesInCategory(category1);
+
+  console.log('Dishes in Category:');
+  for (const dish of dishesIterator) {
+    console.log(dish.getName());
+  }
+
+  const dishFilterCallback = function (dish) {
+  // Filtrar platos que contengan "Ensalada" en el nombre
+    return dish.getName().toLowerCase().includes('ensalada');
+  };
+
+  // Definir una función de ordenación para ordenar los platos por nombre
+  const dishSortFunction = function (dish1, dish2) {
+  // Ordenar por el nombre del plato
+    return dish1.getName().localeCompare(dish2.getName());
+  };
+
+  const filteredDishesIterator = manager.findDishes(dishFilterCallback, dishSortFunction);
+
+  // Mostrar los platos filtrados y ordenados
+  console.log("Metodo FindDishes,buscando por ensalada y ordenado alfabeticamente");
+  for (const dish of filteredDishesIterator) {
+    console.log(dish.getName());
+  }
+
+// Ejemplo de createDish
+console.log("------------------CREAR PLATO------------------");
+const dish3 = manager.createDish('Ensalada Cesar', 'Descripción ensalada Cesar', ['Lechuga', 'Tomate'], 'ensalada.jpg');
+const dish4 = manager.createDish('Pasta 2', 'Descripción pasta', ['Espaguetis', 'Salsa'], 'pasta.jpg');
+console.log(dish3,dish4);
+
+// Ejemplo de createMenu
+console.log("------EL MENÚ YA ESTA CREADO Y AL TENER EL MISMO NOMBRE DEVUELVE EL QUE YA HABIA-------");
+const menu3 = manager.createMenu('Primer Menu', 'Nuestro mejor menu');
+console.log(menu3);
+
+// Ejemplo de createAllergen
+console.log("------------------CREAR ALÉRGENO------------------");
+const allergen3 = manager.createAllergen('Gluten', 'Contiene gluten');
+console.log(allergen3);
+
+console.log("------------------CREAR CATEGORÍA------------------");
+const category3 = manager.createCategory('Entradas', 'Categoría de entradas');
+console.log(category3);
+
+// Ejemplo de createRestaurant
+console.log("------------------CREAR RESTAURANTE------------------");
+const restaurant2 = manager.createRestaurant('Restaurante A', 'Descripción del restaurante A', coord);
+console.log(restaurant2);
 
 } catch (error) {
   console.error('Error:', error.message);
 }
+}
+
+test();
