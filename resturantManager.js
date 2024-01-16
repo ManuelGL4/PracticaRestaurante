@@ -10,9 +10,14 @@ const RestaurantsManager = (function () {
     #allergens = [];
     #restaurants = [];
     #dishes = [];
-  
-    constructor() {}
-  
+    #systemName;
+    
+    //Constructor de RestaurantManager
+    constructor(systemName) {
+      this.#systemName = systemName;
+    }
+
+    //Getters
     getCategories() {
       return this.#categories[Symbol.iterator]();
     }
@@ -33,6 +38,7 @@ const RestaurantsManager = (function () {
       return this.#dishes[Symbol.iterator]();
     }
   
+    //Metodo addCategory
     addCategory(...newCategories) {
       newCategories.forEach((newCategory) => {
         if (!newCategory || !(newCategory instanceof Category)) {
@@ -50,6 +56,7 @@ const RestaurantsManager = (function () {
       return this;
     }
   
+    //Metodo removeCategory
     removeCategory(...categoriesToRemove) {
       categoriesToRemove.forEach((categoryToRemove) => {
         if (!categoryToRemove || !(categoryToRemove instanceof Category) || !this.#categories.includes(categoryToRemove)) {
@@ -68,6 +75,8 @@ const RestaurantsManager = (function () {
   
       return this;
     }
+
+    //Metodo addMenu
     addMenu(...newMenus) {
       newMenus.forEach(function (newMenu) {
         if (!newMenu || !(newMenu instanceof Menu)) {
@@ -84,6 +93,8 @@ const RestaurantsManager = (function () {
 
       return this;
     }
+
+    //Metodo removeMenu
     removeMenu(menu) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu)) {
@@ -112,6 +123,7 @@ const RestaurantsManager = (function () {
       return this;
     }
     
+    //Metodo addAllergen
     addAllergen(...newAllergens) {
       newAllergens.forEach(function (newAllergen) {
         if (!newAllergen || !(newAllergen instanceof Allergen)) {
@@ -129,6 +141,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo removeAllergen
     removeAllergen(...allergensToRemove) {
       allergensToRemove.forEach(function (allergenToRemove) {
         if (!allergenToRemove || !(allergenToRemove instanceof Allergen) || !this.#allergens.includes(allergenToRemove)) {
@@ -150,6 +163,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo addDish
     addDish(...newDishes) {
       newDishes.forEach(function (newDish) {
         if (!newDish || !(newDish instanceof Dish)) {
@@ -167,6 +181,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo removeDish
     removeDish(...dishesToRemove) {
       dishesToRemove.forEach(function (dishToRemove) {
         if (!dishToRemove || !(dishToRemove instanceof Dish) || !this.#dishes.includes(dishToRemove)) {
@@ -200,6 +215,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo addRestaurant
     addRestaurant(...newRestaurants) {
       newRestaurants.forEach(function (newRestaurant) {
         if (!newRestaurant || !(newRestaurant instanceof Restaurant)) {
@@ -217,6 +233,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo removeRestaurant
     removeRestaurant(...restaurantsToRemove) {
       restaurantsToRemove.forEach(function (restaurantToRemove) {
         if (!restaurantToRemove || !(restaurantToRemove instanceof Restaurant) || !this.#restaurants.includes(restaurantToRemove)) {
@@ -230,6 +247,8 @@ const RestaurantsManager = (function () {
 
       return this;
     }
+
+    //Metodo assignCategoryToDish
     assignCategoryToDish(category, dish) {
       // Verificar si category es nulo o no es una instancia de Category
       if (!category || !(category instanceof Category)) {
@@ -241,12 +260,12 @@ const RestaurantsManager = (function () {
         throw new Error('El plato debe ser un objeto Dish y no puede ser nulo.');
       }
 
-      // Si la categoría no está, añadirla
+      // Añadir la categoria
       if (!this.#categories.includes(category)) {
         this.#categories.push(category);
       }
 
-      // Si el plato no está, añadirlo
+      //<Añadir el plato
       if (!this.#dishes.includes(dish)) {
         this.#dishes.push(dish);
       }
@@ -262,6 +281,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo deassignCategoryToDish
     deassignCategoryToDish(category, dish) {
       // Verificar si category es nulo o no está registrada
       if (!category || !(category instanceof Category) || !this.#categories.includes(category)) {
@@ -286,6 +306,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo assignAllergenToDish
     assignAllergenToDish(allergen, dish) {
       // Verificar si allergen es nulo o no es una instancia de Allergen
       if (!allergen || !(allergen instanceof Allergen)) {
@@ -297,12 +318,12 @@ const RestaurantsManager = (function () {
         throw new Error('El plato debe ser un objeto Dish y no puede ser nulo.');
       }
     
-      // Si el alérgeno no está registrado, añadirlo al sistema
+      // Si el alérgeno no está,añadirlo
       if (!this.#allergens.includes(allergen)) {
         this.#allergens.push(allergen);
       }
     
-      // Si el plato no está registrado, añadirlo al sistema
+      // Si el plato no está registrado,añadirlo
       if (!this.#dishes.includes(dish)) {
         this.#dishes.push(dish);
       }
@@ -318,6 +339,7 @@ const RestaurantsManager = (function () {
       return this;
     }
     
+    //Metodo deassignAllergenToDish
     deassignAllergenToDish(allergen, dish) {
       // Verificar si allergen es nulo o no está registrado
       if (!allergen || !(allergen instanceof Allergen) || !this.#allergens.includes(allergen)) {
@@ -329,7 +351,7 @@ const RestaurantsManager = (function () {
         throw new Error('El plato no está registrado.');
       }
     
-      // Desasignar el plato del alérgeno
+      // Desasignar el plato del alergeno
       const updatedDishes = allergen.getDishes().filter(function (d) {
         return d !== dish;
       });
@@ -339,7 +361,7 @@ const RestaurantsManager = (function () {
       return this;
     }
     
-    
+    //Metodo assignDishToMenu
     assignDishToMenu(menu, dish) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu)) {
@@ -377,6 +399,8 @@ const RestaurantsManager = (function () {
     
       return this;
     }
+
+    //Metodo deassignDishToMenu
     deassignDishToMenu(menu, dish) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu) || !this.#menus.includes(menu)) {
@@ -399,6 +423,7 @@ const RestaurantsManager = (function () {
       return this;
     }
     
+    //Metodo changeDishesPositionsInMenu
     changeDishesPositionsInMenu(menu, dish1, dish2) {
       // Verificar si menu es nulo o no es una instancia de Menu
       if (!menu || !(menu instanceof Menu)) {
@@ -432,6 +457,7 @@ const RestaurantsManager = (function () {
       return this;
     }
 
+    //Metodo getDishesInCategory
     getDishesInCategory(category) {
       if (!category || !(category instanceof Category) || !this.#categories.includes(category)) {
         throw new Error('La categoría no está registrada.');
@@ -457,6 +483,7 @@ const RestaurantsManager = (function () {
       };
     }
 
+    //Metodo getDishesWithAllergen
     getDishesWithAllergen(allergen) {
       if (!allergen || !(allergen instanceof Allergen) || !this.#allergens.includes(allergen)) {
         throw new Error('El alérgeno no está registrado.');
@@ -482,7 +509,7 @@ const RestaurantsManager = (function () {
       };
     }
     
-    
+    //Metodo findDishes
     findDishes(callback, sortFunction) {
       if (typeof callback !== 'function' || typeof sortFunction !== 'function') {
         throw new Error('Las funciones de callback y ordenación deben ser proporcionadas.');
@@ -504,29 +531,28 @@ const RestaurantsManager = (function () {
         }
       };
     }
-    
-    
-    
-    
-    
-    
-  
-    
-    
-    
 
+    // Método createDish
     createDish(name, description = '', ingredients = [], image = '') {
-      const existDish=this.#dishes.find((dish) => dish.getName() === name);
-      if(existDish){
-        return existDish
-      }else{//No esta
+      const existDish = this.#dishes.find(function(dish) {
+        return dish.getName() === name;
+      });
+    
+      if (existDish) {
+        return existDish;
+      } else {
         let newDish = new Dish(name, description, ingredients, image);
+        this.#dishes.push(newDish);
         return newDish;
       }
     }
 
+    // Método createMenu
     createMenu(name, description = '') {
-      const existMenu = this.#menus.find((menu) => menu.getName() === name);
+      const existMenu = this.#menus.find(function(menu) {
+        return menu.getName() === name;
+      });
+    
       if (existMenu) {
         return existMenu;
       } else {
@@ -536,8 +562,12 @@ const RestaurantsManager = (function () {
       }
     }
 
+    // Método createAllergen
     createAllergen(name, description = '') {
-      const existAllergen = this.#allergens.find((allergen) => allergen.getName() === name);
+      const existAllergen = this.#allergens.find(function(allergen) {
+        return allergen.getName() === name;
+      });
+    
       if (existAllergen) {
         return existAllergen;
       } else {
@@ -546,8 +576,13 @@ const RestaurantsManager = (function () {
         return newAllergen;
       }
     }
+
+    // Método createCategory
     createCategory(name, description = '') {
-      const existCategory = this.#categories.find((category) => category.getName() === name);
+      const existCategory = this.#categories.find(function(category) {
+        return category.getName() === name;
+      });
+    
       if (existCategory) {
         return existCategory;
       } else {
@@ -556,10 +591,13 @@ const RestaurantsManager = (function () {
         return newCategory;
       }
     }
-  
+    
     // Método createRestaurant
     createRestaurant(name, description = '', location = null) {
-      const existRestaurant = this.#restaurants.find((restaurant) => restaurant.getName() === name);
+      const existRestaurant = this.#restaurants.find(function(restaurant) {
+        return restaurant.getName() === name;
+      });
+    
       if (existRestaurant) {
         return existRestaurant;
       } else {
@@ -568,10 +606,8 @@ const RestaurantsManager = (function () {
         return newRestaurant;
       }
     }
+    
   }
-
-
-
 
   function init() {
       return new RestaurantsManager();
@@ -604,7 +640,7 @@ const menu2 = new Menu('SEGUNDO Menu', 'Nuestro peor menu');
 
 const restaurant1 = new Restaurant('Restaurante1', 'El mejor restaurante', coord);
 
-// Pruebas de las funciones de RestaurantsManager
+// Pruebas de las funciones
 try {
   // Añadir categorías
   console.log("------------------AÑADIR CATEGORIAS------------------");
