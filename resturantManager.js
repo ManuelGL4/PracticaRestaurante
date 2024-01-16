@@ -805,7 +805,6 @@ try {
     return dish.getName().toLowerCase().includes('ensalada');
   };
 
-  // Definir una función de ordenación para ordenar los platos por nombre
   const dishSortFunction = function (dish1, dish2) {
   // Ordenar por el nombre del plato
     return dish1.getName().localeCompare(dish2.getName());
@@ -843,6 +842,10 @@ console.log(category3);
 console.log("------------------CREAR RESTAURANTE------------------");
 const restaurant2 = manager.createRestaurant('Restaurante A', 'Descripción del restaurante A', coord);
 console.log(restaurant2);
+
+console.log("------------------CREAR RESTAURANTE QUE YA HABIA SIDO CREADO Y DEVUELVE ESE MISMO RESTAURANTE,EN LA INSTANCIACION HAY UNA NUEVA DESCRIPCION PERO EN EL OBJETO ESTA LA OTRA DESCRICPCION DE RESTAURANTE1------------------");
+const restaurant3 = manager.createRestaurant('Restaurante1', 'El mejor restaurante 2', coord);
+console.log(restaurant3);
 
 } catch (error) {
   console.error('Error:', error.message);
